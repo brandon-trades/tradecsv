@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "tradecsv.report/0.1",
+  "tool": {
+    "name": "tradecsv",
+    "version": "0.1.0"
+  },
+  "input": {
+    "sha256": "31a929c9cadb8789c4805f66b7aa954372a0c55b9e7d12bf5aed68b3a7eab0ca",
+    "bytes": 808
+  },
+  "format": "spot-fills-template/0.1",
+  "account": "default",
+  "status": "failed",
+  "export": "none",
+  "summary": {
+    "totalRecords": 11,
+    "acceptedRecords": 4,
+    "rejectedRecords": 7,
+    "recordsWithWarnings": 3,
+    "blankRecordsIgnored": 1,
+    "duplicateCandidates": {
+      "identical": 0,
+      "conflicting": 2,
+      "suspected": 1
+    }
+  },
+  "unmappedColumns": [],
+  "diagnostics": [
+    {
+      "severity": "error",
+      "code": "INVALID_NUMBER",
+      "record": 1,
+      "field": "price",
+      "message": "price is not a plain decimal number: \"1,250.5\"",
+      "hint": "Use digits with an optional dot: no thousands separators, decimal commas or exponents (e.g. 1250.5, 0.00000012)."
+    },
+    {
+      "severity": "error",
+      "code": "TIME_ZONE_MISSING",
+      "record": 2,
+      "field": "executed_at",
+      "message": "executed_at has no time zone: \"2026-03-03 08:01:00\"",
+      "hint": "Add Z or an offset like +08:00, or declare a fixed offset in a mapping (time.format \"naive\"). TradeCSV never assumes the computer's time zone."
+    },
+    {
+      "severity": "error",
+      "code": "INVALID_QUANTITY",
+      "record": 3,
+      "field": "quantity",
+      "message": "quantity must be greater than 0 (got -0.1)",
+      "hint": "Quantity is the base amount filled. Buy or sell comes from the side column; TradeCSV does not infer it from a minus sign."
+    },
+    {
+      "severity": "error",
+      "code": "INVALID_SIDE",
+      "record": 4,
+      "field": "side",
+      "message": "side is not a recognized value: \"long\"",
+      "hint": "Use buy or sell."
+    },
+    {
+      "severity": "error",
+      "code": "CONFLICTING_TRADE_ID",
+      "record": 5,
+      "field": "trade_id",
+      "message": "trade_id \"1005\" appears in records 5, 6 with different content",
+      "hint": "None of them is chosen. Check the source export; the same fill id must not have different values."
+    },
+    {
+      "severity": "error",
+      "code": "CONFLICTING_TRADE_ID",
+      "record": 6,
+      "field": "trade_id",
+      "message": "trade_id \"1005\" appears in records 5, 6 with different content",
+      "hint": "None of them is chosen. Check the source export; the same fill id must not have different values."
+    },
+    {
+      "severity": "error",
+      "code": "ROW_FIELD_COUNT",
+      "record": 7,
+      "field": null,
+      "message": "Record has 9 fields; the header has 11",
+      "hint": "Check for missing or extra commas, or an unquoted comma inside a value."
+    },
+    {
+      "severity": "warning",
+      "code": "SUSPECTED_DUPLICATE",
+      "record": 10,
+      "field": null,
+      "message": "Same time, assets, side, price and quantity as record 9, and no trade_id",
+      "hint": "Kept. Separate fills can be identical; without a trade_id TradeCSV cannot tell. Marked with suspectedDuplicateOf."
+    },
+    {
+      "severity": "warning",
+      "code": "QUOTE_AMOUNT_MISMATCH",
+      "record": 11,
+      "field": "quote_amount",
+      "message": "quote_amount 850 differs from price × quantity = 800",
+      "hint": "Both values are kept. Check whether the amount includes fees or comes from another fill."
+    },
+    {
+      "severity": "warning",
+      "code": "FEE_CURRENCY_MISSING",
+      "record": 12,
+      "field": "fee_currency",
+      "message": "fee_amount 0.4 has no fee_currency, so the fee is left as unknown",
+      "hint": "TradeCSV never assumes the fee currency. Fill in fee_currency or map it."
+    }
+  ]
+}

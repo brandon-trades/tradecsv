@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "tradecsv.report/0.1",
+  "tool": {
+    "name": "tradecsv",
+    "version": "0.1.0"
+  },
+  "input": {
+    "sha256": "2ae660f6cc7f32ef7be9512d8d91304668764c0b1eff06d78cdd690597c61ad6",
+    "bytes": 296
+  },
+  "format": "example-broker-spot-fills",
+  "account": "default",
+  "status": "ok",
+  "export": "complete",
+  "summary": {
+    "totalRecords": 3,
+    "acceptedRecords": 3,
+    "rejectedRecords": 0,
+    "recordsWithWarnings": 0,
+    "blankRecordsIgnored": 0,
+    "duplicateCandidates": {
+      "identical": 0,
+      "conflicting": 0,
+      "suspected": 0
+    }
+  },
+  "unmappedColumns": [
+    "Memo"
+  ],
+  "diagnostics": []
+}

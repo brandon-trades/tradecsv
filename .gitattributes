@@ -1,0 +1,3 @@
+* text=auto eol=lf
+# Spreadsheet CSV output is CRLF with a BOM by design; keep the bytes as generated
+examples/expected/**/*.csv -text

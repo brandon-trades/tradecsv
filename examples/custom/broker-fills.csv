@@ -1,0 +1,4 @@
+Trade ID,Time,Coin,Side,Price,Amount,Fee,Fee Coin,Memo
+T-0001,2026-03-04 09:00:00,BTC,BUY,63000,0.002,-0.126,USDT,first fill
+T-0002,2026-03-04 09:00:01,BTC,BUY,63001,0.001,-0.063001,USDT,"note, with a comma"
+T-0003,2026-03-04 21:30:00,ETH,SELL,3100,0.5,0.01,USDT,rebate (positive in this source)

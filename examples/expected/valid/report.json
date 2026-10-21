@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "tradecsv.report/0.1",
+  "tool": {
+    "name": "tradecsv",
+    "version": "0.1.0"
+  },
+  "input": {
+    "sha256": "e7a21514b445ffb855e7079b78d46a01366d28f36c6c61976ee15c658bedb156",
+    "bytes": 631
+  },
+  "format": "spot-fills-template/0.1",
+  "account": "default",
+  "status": "ok_with_warnings",
+  "export": "complete",
+  "summary": {
+    "totalRecords": 6,
+    "acceptedRecords": 6,
+    "rejectedRecords": 0,
+    "recordsWithWarnings": 1,
+    "blankRecordsIgnored": 0,
+    "duplicateCandidates": {
+      "identical": 0,
+      "conflicting": 0,
+      "suspected": 0
+    }
+  },
+  "unmappedColumns": [],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "FEE_MISSING",
+      "record": 5,
+      "field": "fee_amount",
+      "message": "fee_amount is empty, so the fee is unknown (null, not 0)",
+      "hint": "Fill in the fee if the source has it."
+    }
+  ]
+}

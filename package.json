@@ -1,0 +1,56 @@
+{
+  "name": "tradecsv",
+  "version": "0.1.0",
+  "description": "Check spot trade-fill CSV files locally, report concrete data problems, and export normalized records.",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "tradecsv": "./dist/cli/main.js"
+  },
+  "files": [
+    "dist",
+    "docs",
+    "examples",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "npm run build && vitest run",
+    "check": "npm run typecheck && npm test",
+    "examples": "node scripts/run-examples.mjs"
+  },
+  "keywords": [
+    "csv",
+    "trades",
+    "fills",
+    "spot",
+    "validation",
+    "normalization",
+    "crypto",
+    "trading-journal"
+  ],
+  "dependencies": {
+    "big.js": "6.2.2",
+    "papaparse": "5.5.3"
+  },
+  "devDependencies": {
+    "@types/big.js": "6.2.2",
+    "@types/node": "22.20.5",
+    "@types/papaparse": "5.5.2",
+    "typescript": "5.9.3",
+    "vitest": "5.0.5"
+  }
+}

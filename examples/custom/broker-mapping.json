@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "tradecsv.mapping/0.1",
+  "formatId": "example-broker-spot-fills",
+  "columns": {
+    "trade_id": "Trade ID",
+    "executed_at": "Time",
+    "base_asset": "Coin",
+    "side": "Side",
+    "price": "Price",
+    "quantity": "Amount",
+    "fee_amount": "Fee",
+    "fee_currency": "Fee Coin"
+  },
+  "fixed": { "quote_asset": "USDT" },
+  "time": { "format": "naive", "utcOffset": "+08:00" },
+  "side": { "buy": ["BUY"], "sell": ["SELL"] },
+  "fee": { "sign": "cost_negative" }
+}
