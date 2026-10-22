@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "tradecsv.report/0.1",
+  "schemaVersion": "tradecsv.report/0.2",
   "tool": {
     "name": "tradecsv",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "input": {
     "sha256": "31a929c9cadb8789c4805f66b7aa954372a0c55b9e7d12bf5aed68b3a7eab0ca",
@@ -18,6 +18,7 @@
     "rejectedRecords": 7,
     "recordsWithWarnings": 3,
     "blankRecordsIgnored": 1,
+    "nonFillRecords": 0,
     "duplicateCandidates": {
       "identical": 0,
       "conflicting": 2,
@@ -63,7 +64,7 @@
       "code": "CONFLICTING_TRADE_ID",
       "record": 5,
       "field": "trade_id",
-      "message": "trade_id \"1005\" appears in records 5, 6 with different content",
+      "message": "Trade id \"1005\" appears in records 5, 6 with different content",
       "hint": "None of them is chosen. Check the source export; the same fill id must not have different values."
     },
     {
@@ -71,7 +72,7 @@
       "code": "CONFLICTING_TRADE_ID",
       "record": 6,
       "field": "trade_id",
-      "message": "trade_id \"1005\" appears in records 5, 6 with different content",
+      "message": "Trade id \"1005\" appears in records 5, 6 with different content",
       "hint": "None of them is chosen. Check the source export; the same fill id must not have different values."
     },
     {

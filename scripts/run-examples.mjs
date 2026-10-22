@@ -9,3 +9,4 @@ mkdirSync("examples/expected", { recursive: true });
 cli(["convert", "examples/valid-fills.csv", "--out", "examples/expected/valid"]);
 cli(["convert", "examples/broken-fills.csv", "--out", "examples/expected/broken"]);
 cli(["convert", "examples/custom/broker-fills.csv", "--mapping", "examples/custom/broker-mapping.json", "--out", "examples/expected/custom"]);
+cli(["convert", "examples/okx/okx-unified-bill-sample.csv", "--out", "examples/expected/okx"]);

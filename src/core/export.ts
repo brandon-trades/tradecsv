@@ -27,8 +27,9 @@ export function toReportJson(result: ProcessResult): string {
 }
 
 export const SPREADSHEET_COLUMNS = [
-  "source_record", "format", "account", "market_type", "trade_id", "order_id", "executed_at", "base_asset", "quote_asset",
-  "side", "price", "quantity", "quote_amount", "fee_amount", "fee_currency", "duplicate_of", "suspected_duplicate_of",
+  "source_record", "format", "account", "market_type", "instrument", "trade_id", "order_id", "executed_at", "base_asset", "quote_asset",
+  "side", "position_side", "position_effect", "price", "quantity", "quantity_unit", "quote_amount", "fee_amount", "fee_currency",
+  "realized_pnl", "realized_pnl_currency", "duplicate_of", "suspected_duplicate_of",
 ] as const;
 
 const FORMULA_START = /^[=+\-@\t\r]/;
@@ -50,8 +51,10 @@ const quoteField = (s: string) => '"' + s.replace(/"/g, '""') + '"';
 export function toSpreadsheetCsv(records: NormalizedFill[]): string {
   const lines = [SPREADSHEET_COLUMNS.map(quoteField).join(",")];
   for (const r of records) {
-    const cells = [r.sourceRecord, r.format, r.account, r.marketType, r.tradeId, r.orderId, r.executedAt, r.baseAsset, r.quoteAsset, r.side, r.price, r.quantity, r.quoteAmount, r.feeAmount, r.feeCurrency, r.duplicateOf, r.suspectedDuplicateOf];
+    const cells = [r.sourceRecord, r.format, r.account, r.marketType, r.instrument, r.tradeId, r.orderId, r.executedAt, r.baseAsset, r.quoteAsset,
+      r.side, r.positionSide, r.positionEffect, r.price, r.quantity, r.quantityUnit, r.quoteAmount, r.feeAmount, r.feeCurrency,
+      r.realizedPnl, r.realizedPnlCurrency, r.duplicateOf, r.suspectedDuplicateOf];
     lines.push(cells.map((c) => quoteField(spreadsheetCell(c))).join(","));
   }
-  return "﻿" + lines.join("\r\n") + "\r\n";
+  return "\uFEFF" + lines.join("\r\n") + "\r\n";
 }

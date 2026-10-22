@@ -6,5 +6,6 @@ export { parseTime } from "./core/time.js";
 export { isPlainDecimal, normalizeDecimal } from "./core/decimal.js";
 export { DEFAULT_MAX_BYTES } from "./core/csv.js";
 export { TEMPLATE_COLUMNS, TEMPLATE_FORMAT_ID, TEMPLATE_MAPPING } from "./formats/template.js";
+export { OKX_BILL_FORMAT_ID, OKX_BILL_HEADER } from "./formats/okx-unified-bill.js";
 export { VERSION } from "./version.js";
 export * from "./core/types.js";

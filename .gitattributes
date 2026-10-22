@@ -1,3 +1,5 @@
 * text=auto eol=lf
 # Spreadsheet CSV output is CRLF with a BOM by design; keep the bytes as generated
 examples/expected/**/*.csv -text
+# The OKX sample reproduces the real export byte for byte (BOMs, CRLF on the first line only)
+examples/okx/*.csv -text

@@ -1,8 +1,8 @@
 {
-  "schemaVersion": "tradecsv.report/0.1",
+  "schemaVersion": "tradecsv.report/0.2",
   "tool": {
     "name": "tradecsv",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "input": {
     "sha256": "e7a21514b445ffb855e7079b78d46a01366d28f36c6c61976ee15c658bedb156",
@@ -18,6 +18,7 @@
     "rejectedRecords": 0,
     "recordsWithWarnings": 1,
     "blankRecordsIgnored": 0,
+    "nonFillRecords": 0,
     "duplicateCandidates": {
       "identical": 0,
       "conflicting": 0,

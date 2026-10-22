@@ -1,7 +1,7 @@
 {
   "name": "tradecsv",
-  "version": "0.1.0",
-  "description": "Check spot trade-fill CSV files locally, report concrete data problems, and export normalized records.",
+  "version": "0.2.0",
+  "description": "Check trade-fill CSV files locally (spot template, OKX unified bill perpetual fills), report concrete data problems, and export normalized records.",
   "type": "module",
   "license": "MIT",
   "main": "./dist/index.js",

@@ -15,7 +15,7 @@ beforeEach(() => { out = mkdtempSync(join(tmpdir(), "tradecsv-")); return () => 
 describe("cli", () => {
   it("prints help and version", () => {
     expect(run("--help").stdout).toContain("tradecsv check <input.csv>");
-    expect(run("--version").stdout.trim()).toBe("0.1.0");
+    expect(run("--version").stdout.trim()).toBe("0.2.0");
     expect(run("template").stdout.trim()).toBe("trade_id,order_id,executed_at,base_asset,quote_asset,side,price,quantity,quote_amount,fee_amount,fee_currency");
   });
   it("check: exit 0 for a valid file, 1 for errors, 2 for usage problems", () => {
@@ -29,7 +29,7 @@ describe("cli", () => {
   });
   it("check --json prints the report", () => {
     const r = JSON.parse(run("check", "examples/broken-fills.csv", "--json").stdout);
-    expect(r.schemaVersion).toBe("tradecsv.report/0.1");
+    expect(r.schemaVersion).toBe("tradecsv.report/0.2");
     expect(r.summary.rejectedRecords).toBe(7);
   });
   it("convert writes report, JSON and CSV for a valid file", () => {
@@ -65,6 +65,15 @@ describe("cli", () => {
     const doc = JSON.parse(readFileSync(join(out, "normalized.json"), "utf8"));
     expect(doc.format).toBe("example-broker-spot-fills");
     expect(doc.records.map((x: { executedAt: string }) => x.executedAt)).toEqual(["2026-03-04T01:00:00Z", "2026-03-04T01:00:01Z", "2026-03-04T13:30:00Z"]);
+  });
+  it("converts the OKX unified bill sample", () => {
+    const r = run("convert", "examples/okx/okx-unified-bill-sample.csv", "--out", out);
+    expect(r.status).toBe(0);
+    expect(r.stdout).toContain("2 not trades (excluded)");
+    const doc = JSON.parse(readFileSync(join(out, "normalized.json"), "utf8"));
+    expect(doc.format).toBe("okx-unified-bill-zh/v1");
+    expect(doc.records).toHaveLength(5);
+    expect(run("check", "examples/okx/okx-unified-bill-sample.csv", "--format", "nope").status).toBe(2);
   });
   it("rejects files over --max-size-mb before reading them", () => {
     const big = join(out, "big.csv");

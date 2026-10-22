@@ -21,6 +21,8 @@ Usage:
   tradecsv template                               Print the Spot Fills Template v0.1 header row
 
 Options:
+  --format <id>           auto (default), spot-fills-template/0.1 or okx-unified-bill-zh/v1.
+                          auto recognizes the verified OKX unified bill (Chinese interface) by its exact header.
   --mapping <file.json>   Column mapping for files that do not use the template (docs/format.md §11)
   --account <label>       Account label used to scope duplicate detection (default: default)
   --out <dir>             Output directory for convert (created if missing)
@@ -43,7 +45,7 @@ function main(argv: string[]): number {
     parsed = parseArgs({
       args: argv, allowPositionals: true, strict: true,
       options: {
-        mapping: { type: "string" }, account: { type: "string" }, out: { type: "string" },
+        format: { type: "string" }, mapping: { type: "string" }, account: { type: "string" }, out: { type: "string" },
         "allow-partial": { type: "boolean" }, force: { type: "boolean" }, "max-size-mb": { type: "string" },
         json: { type: "boolean" }, help: { type: "boolean", short: "h" }, version: { type: "boolean", short: "v" },
       },
@@ -73,6 +75,9 @@ function main(argv: string[]): number {
     return 1;
   }
 
+  const formats = ["auto", "spot-fills-template/0.1", "okx-unified-bill-zh/v1"];
+  if (o.format !== undefined && !formats.includes(o.format)) throw new UsageError(`--format must be one of: ${formats.join(", ")}`);
+  if (o.format !== undefined && o.format !== "auto" && o.mapping !== undefined) throw new UsageError("--format and --mapping cannot be combined; a mapping defines its own format");
   let mapping: unknown;
   if (o.mapping !== undefined) {
     const mp = resolve(o.mapping);
@@ -94,7 +99,7 @@ function main(argv: string[]): number {
   }
 
   const result = processCsv(new Uint8Array(readFileSync(inputPath)), {
-    mapping: mapping as never, account: o.account, maxBytes, allowPartial: o["allow-partial"] === true,
+    mapping: mapping as never, format: o.format as never, account: o.account, maxBytes, allowPartial: o["allow-partial"] === true,
   });
 
   if (cmd === "check") {
@@ -122,7 +127,7 @@ function printSummary(input: string, r: ProcessResult) {
   const s = r.report.summary;
   const n = (v: number | null) => (v === null ? "unknown" : String(v));
   console.log(`${input}: ${r.report.status.toUpperCase()} (format ${r.report.format ?? "unknown"}, account ${r.report.account})`);
-  console.log(`  records: ${n(s.totalRecords)} total, ${n(s.acceptedRecords)} accepted, ${n(s.rejectedRecords)} rejected, ${s.recordsWithWarnings} with warnings, ${s.blankRecordsIgnored} blank ignored`);
+  console.log(`  records: ${n(s.totalRecords)} total, ${n(s.acceptedRecords)} accepted, ${n(s.rejectedRecords)} rejected${s.nonFillRecords ? `, ${s.nonFillRecords} not trades (excluded)` : ""}, ${s.recordsWithWarnings} with warnings, ${s.blankRecordsIgnored} blank ignored`);
   const dc = s.duplicateCandidates;
   if (dc.identical || dc.conflicting || dc.suspected) console.log(`  duplicates: ${dc.identical} identical, ${dc.conflicting} conflicting, ${dc.suspected} suspected`);
   if (r.report.unmappedColumns.length) console.log(`  ignored columns: ${r.report.unmappedColumns.join(", ")}`);

@@ -1,7 +1,7 @@
 // Public types for TradeCSV. See docs/format.md for the meaning of every field.
 
-export const NORMALIZED_SCHEMA = "tradecsv.normalized/0.1";
-export const REPORT_SCHEMA = "tradecsv.report/0.1";
+export const NORMALIZED_SCHEMA = "tradecsv.normalized/0.2";
+export const REPORT_SCHEMA = "tradecsv.report/0.2";
 export const MAPPING_SCHEMA = "tradecsv.mapping/0.1";
 
 /** Canonical input fields (template column names). */
@@ -53,14 +53,20 @@ export type DiagnosticCode =
   | "FEE_CURRENCY_MISSING"
   | "FEE_SIGN_UNKNOWN"
   | "DUPLICATE_TRADE_ID"
-  | "SUSPECTED_DUPLICATE";
+  | "SUSPECTED_DUPLICATE"
+  | "UNSUPPORTED_INSTRUMENT"
+  | "UNSUPPORTED_ROW_TYPE"
+  | "INVALID_UNIT"
+  | "NON_FILL_RECORD"
+  | "BALANCE_MISMATCH";
 
 export interface Diagnostic {
   severity: Severity;
   code: DiagnosticCode;
   /** 1-based record number after the header (blank rows counted), or null for file-level issues. */
   record: number | null;
-  field: CanonicalField | null;
+  /** Canonical field (template formats) or source column name (exchange formats), or null. */
+  field: string | null;
   message: string;
   hint: string;
 }
@@ -69,7 +75,9 @@ export interface NormalizedFill {
   format: string;
   account: string;
   sourceRecord: number;
-  marketType: "spot";
+  marketType: "spot" | "perpetual";
+  /** Exchange instrument id for derivatives (e.g. "BTC-USDT-SWAP"); null for spot. */
+  instrument: string | null;
   tradeId: string | null;
   orderId: string | null;
   /** UTC, ISO 8601 with Z. */
@@ -77,17 +85,25 @@ export interface NormalizedFill {
   baseAsset: string;
   quoteAsset: string;
   side: "buy" | "sell";
+  /** Derivatives only: which position the fill belongs to, and whether it opens or closes it. null for spot. */
+  positionSide: "long" | "short" | null;
+  positionEffect: "open" | "close" | null;
   /** Decimal strings. */
   price: string;
   quantity: string;
+  /** "base" = base asset amount (spot); "contracts" = number of contracts as reported (not converted). */
+  quantityUnit: "base" | "contracts";
   quoteAmount: string | null;
   /** Positive = fee paid, negative = rebate. null = unknown. */
   feeAmount: string | null;
   feeCurrency: string | null;
+  /** Realized P&L of this fill as reported by the exchange (never computed by TradeCSV). null when not reported. */
+  realizedPnl: string | null;
+  realizedPnlCurrency: string | null;
   duplicateOf: number | null;
   suspectedDuplicateOf: number | null;
-  /** Original text of the mapped input fields. */
-  sourceValues: Partial<Record<CanonicalField, string>>;
+  /** Original text of the input fields used for this record (keys: canonical fields or source column names). */
+  sourceValues: Record<string, string>;
 }
 
 export interface Summary {
@@ -96,6 +112,8 @@ export interface Summary {
   rejectedRecords: number | null;
   recordsWithWarnings: number;
   blankRecordsIgnored: number;
+  /** Rows that are valid but are not trades (e.g. funding, transfers); excluded from the export. */
+  nonFillRecords: number;
   duplicateCandidates: { identical: number; conflicting: number; suspected: number };
 }
 
@@ -136,8 +154,12 @@ export interface MappingConfig {
   fee?: { sign: "cost_positive" | "cost_negative" | "unknown" };
 }
 
+export type FormatChoice = "auto" | "spot-fills-template/0.1" | "okx-unified-bill-zh/v1";
+
 export interface ProcessOptions {
-  /** Column mapping; omit to use the Spot Fills Template v0.1. */
+  /** Input format. "auto" (default) recognizes the verified exchange formats by their exact header and otherwise uses the template. */
+  format?: FormatChoice;
+  /** Column mapping (spot only); omit to use the Spot Fills Template v0.1. Takes precedence over format detection. */
   mapping?: MappingConfig;
   /** Account label used to scope duplicate detection. Default "default". */
   account?: string;

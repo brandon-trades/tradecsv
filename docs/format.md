@@ -1,20 +1,24 @@
-# TradeCSV data contract (v0.1)
+# TradeCSV data contract (v0.2)
 
 This document is the specification. The code follows it; if they disagree, that is a bug.
 
-- Normalized output schema: `tradecsv.normalized/0.1`
-- Diagnostic report schema: `tradecsv.report/0.1`
+- Normalized output schema: `tradecsv.normalized/0.2`
+- Diagnostic report schema: `tradecsv.report/0.2`
 - Mapping file schema: `tradecsv.mapping/0.1`
-- Input template: **Spot Fills Template v0.1** (format id `spot-fills-template/0.1`)
+- Input formats:
+  - **Spot Fills Template v0.1** (format id `spot-fills-template/0.1`), defined by this project
+  - **OKX unified bill, Chinese interface** (format id `okx-unified-bill-zh/v1`): USDT-margined perpetual fills, verified against a real export (§14, `docs/formats.md`)
+
+Changes from v0.1: records gained `instrument`, `positionSide`, `positionEffect`, `quantityUnit`, `realizedPnl` and `realizedPnlCurrency`; `marketType` can be `perpetual`; the summary gained `nonFillRecords`.
 
 ## 1. What one input row means
 
-Every data row is **one executed spot fill**: a single trade that actually happened, for a base asset against a quote asset, at one price and quantity.
+Every data row is **one executed fill**: a single trade that actually happened, at one price and quantity. In the template and in mappings it is a spot fill. In the OKX unified bill it is a USDT-margined perpetual swap fill (§14); rows in that export that are not fills (funding, margin changes, transfers) are counted and excluded.
 
 - An order can produce several fills. Each fill is its own row, and all of them are kept.
 - Rows that describe orders (open, cancelled, unfilled, or order totals) are **not** fills. TradeCSV cannot tell them apart on its own, so do not put them in the file.
 - One file = one account and one export. Records from different accounts must not be mixed in one file.
-- Out of scope in v0.1: derivatives, leverage, positions, deposits and withdrawals, transfers, P&L, tax, valuation.
+- Out of scope: positions and position history, coin-margined and delivery futures, options, deposits and withdrawals, P&L calculation, tax, valuation. Realized P&L is only passed through when the exchange reports it per fill.
 
 ## 2. File-level rules
 
@@ -134,7 +138,7 @@ Each diagnostic has `severity` (`error` or `warning`), `code`, `record` (record 
 
 Counts:
 
-- `totalRecords = acceptedRecords + rejectedRecords` (blank records excluded).
+- `totalRecords = acceptedRecords + rejectedRecords + nonFillRecords` (blank records excluded). `nonFillRecords` is 0 for the template and mappings.
 - `acceptedRecords` includes records with warnings; `recordsWithWarnings` counts them.
 - `duplicateCandidates` counts flagged records: `identical` and `suspected` count the later copies (the first occurrence is not flagged); `conflicting` counts every record of a conflicting group. These overlap with the totals and are never added to them.
 - Duplicate checks compare only records that passed all other checks.
@@ -161,7 +165,7 @@ With partial export explicitly enabled (`--allow-partial`, or `allowPartial: tru
 
 ```json
 {
-  "schemaVersion": "tradecsv.normalized/0.1",
+  "schemaVersion": "tradecsv.normalized/0.2",
   "tool": { "name": "tradecsv", "version": "0.1.0" },
   "input": { "sha256": "…", "bytes": 1234 },
   "format": "spot-fills-template/0.1",
@@ -174,17 +178,23 @@ With partial export explicitly enabled (`--allow-partial`, or `allowPartial: tru
       "account": "default",
       "sourceRecord": 1,
       "marketType": "spot",
+      "instrument": null,
       "tradeId": "000123",
       "orderId": "9001",
       "executedAt": "2026-03-01T09:30:00Z",
       "baseAsset": "BTC",
       "quoteAsset": "USDT",
       "side": "buy",
+      "positionSide": null,
+      "positionEffect": null,
       "price": "64000.10",
       "quantity": "0.00150000",
+      "quantityUnit": "base",
       "quoteAmount": "96.000150",
       "feeAmount": "0.096",
       "feeCurrency": "USDT",
+      "realizedPnl": null,
+      "realizedPnlCurrency": null,
       "duplicateOf": null,
       "suspectedDuplicateOf": null,
       "sourceValues": { "executed_at": "2026-03-01T09:30:00Z", "price": "64000.10" }
@@ -207,7 +217,7 @@ Same records, one per row, for opening in a spreadsheet:
 
 ```json
 {
-  "schemaVersion": "tradecsv.report/0.1",
+  "schemaVersion": "tradecsv.report/0.2",
   "tool": { "name": "tradecsv", "version": "0.1.0" },
   "input": { "sha256": "…", "bytes": 1234 },
   "format": "spot-fills-template/0.1",
@@ -216,7 +226,7 @@ Same records, one per row, for opening in a spreadsheet:
   "export": "none",
   "summary": {
     "totalRecords": 4, "acceptedRecords": 3, "rejectedRecords": 1,
-    "recordsWithWarnings": 1, "blankRecordsIgnored": 0,
+    "recordsWithWarnings": 1, "blankRecordsIgnored": 0, "nonFillRecords": 0,
     "duplicateCandidates": { "identical": 0, "conflicting": 0, "suspected": 0 }
   },
   "unmappedColumns": [],
@@ -306,3 +316,54 @@ All processing is local. TradeCSV does not use the network, telemetry or any AI 
 | `FEE_SIGN_UNKNOWN` | warning | record |
 | `DUPLICATE_TRADE_ID` | warning | record |
 | `SUSPECTED_DUPLICATE` | warning | record |
+| `UNSUPPORTED_INSTRUMENT` | error | record (OKX) |
+| `UNSUPPORTED_ROW_TYPE` | error | record (OKX) |
+| `INVALID_UNIT` | error | record (OKX) |
+| `NON_FILL_RECORD` | warning | record (OKX) |
+| `BALANCE_MISMATCH` | warning | record (OKX) |
+
+## 14. OKX unified bill (Chinese interface), format `okx-unified-bill-zh/v1`
+
+The OKX "统一交易账单" (unified bill history) export, downloaded from the Simplified Chinese interface. Evidence and its limits: `docs/formats.md`, entry 2026-10-22. Only what that evidence showed is accepted.
+
+### Recognition
+
+`--format auto` (the default) uses this format when the first line starts with `用户ID:` and the second line is exactly this header (a byte-order mark at the start of a field is ignored):
+
+```text
+id,关联订单id,时间,账单类型,交易品种,交易类型,数量,交易单位,成交价,收益,手续费,手续费单位,仓位余额变动,仓位余额,交易账户余额变动,交易账户余额,交易账户余额单位
+```
+
+A file whose first line starts with `用户ID:` but whose header differs (another language, another OKX export) is rejected with `UNKNOWN_FORMAT`. Records are numbered from the line after the header (record *N* is on line *N + 2*). Mixed line endings (CRLF on the first line, LF afterwards, as in the real export) are handled.
+
+### Rows
+
+| 账单类型 / 交易类型 | Result |
+|---|---|
+| 永续合约 / 开多 | fill: `side` buy, `positionSide` long, `positionEffect` open |
+| 永续合约 / 平多 | fill: sell, long, close |
+| 永续合约 / 开空 | fill: sell, short, open |
+| 永续合约 / 平空 | fill: buy, short, close |
+| 永续合约 / 资金费收入, 永续合约 / 自动追加保证金, 划转 / 转入 | not a fill: counted in `nonFillRecords`, warning `NON_FILL_RECORD`, excluded from the export |
+| anything else | error `UNSUPPORTED_ROW_TYPE` (for example funding paid, liquidations): not verified yet, so not guessed |
+
+### Fields of a fill
+
+| Field | From | Rule |
+|---|---|---|
+| `marketType` | — | `perpetual` |
+| `instrument` | 交易品种 | Must match `BASE-USDT-SWAP`; anything else is `UNSUPPORTED_INSTRUMENT` (coin-margined `USD-SWAP` and delivery futures are not verified). |
+| `baseAsset`, `quoteAsset` | 交易品种 | `BASE` and `USDT` from the instrument id. |
+| `tradeId` | id | The bill id (one per fill). Used for duplicate and conflict checks. |
+| `orderId` | 关联订单id | Shared by the fills of one order. |
+| `executedAt` | 时间 + first line | `时间` has no offset; the first line states the export's time zone (`时区:UTC+8`). It is applied as a fixed offset. A missing time zone is a file-level `TIME_ZONE_MISSING`. |
+| `price` | 成交价 | Plain decimal, greater than 0. |
+| `quantity`, `quantityUnit` | 数量, 交易单位 | Number of contracts, kept as reported; `quantityUnit` is `contracts`. 交易单位 must be 张 (`INVALID_UNIT`). Contracts are **not** converted to coins: the contract size is not in the file. |
+| `feeAmount`, `feeCurrency` | 手续费, 手续费单位 | In this export a fee is a signed change of the account balance (negative = paid), so it is negated: −0.06 becomes 0.06 (paid), +0.06 would become −0.06 (rebate). |
+| `realizedPnl`, `realizedPnlCurrency` | 收益, 交易账户余额单位 | As reported by OKX (0 on opening fills). TradeCSV does not compute P&L. |
+| `quoteAmount` | — | `null` (not in this export). |
+| `sourceValues` | — | The row's columns except the running balances 仓位余额 and 交易账户余额, which are not needed. The first line (user id, account type) is never copied. |
+
+### Consistency check
+
+In the evidence, every fill satisfied 交易账户余额变动 = −仓位余额变动 + 收益 + 手续费 to within one unit of the 8th decimal place. A row that differs by more gets warning `BALANCE_MISMATCH`, which means the columns may not mean what this reader assumes for that row.

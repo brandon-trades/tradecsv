@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "tradecsv.report/0.2",
+  "tool": {
+    "name": "tradecsv",
+    "version": "0.2.0"
+  },
+  "input": {
+    "sha256": "c1ae54640f6dcd47b92d65824d656a64474bec8b860ce3c1b3f99e312d8539aa",
+    "bytes": 1640
+  },
+  "format": "okx-unified-bill-zh/v1",
+  "account": "default",
+  "status": "ok_with_warnings",
+  "export": "complete",
+  "summary": {
+    "totalRecords": 7,
+    "acceptedRecords": 5,
+    "rejectedRecords": 0,
+    "recordsWithWarnings": 0,
+    "blankRecordsIgnored": 0,
+    "nonFillRecords": 2,
+    "duplicateCandidates": {
+      "identical": 0,
+      "conflicting": 0,
+      "suspected": 0
+    }
+  },
+  "unmappedColumns": [],
+  "diagnostics": [
+    {
+      "severity": "warning",
+      "code": "NON_FILL_RECORD",
+      "record": 1,
+      "field": "交易类型",
+      "message": "Not a trade (划转 / 转入); excluded from the export",
+      "hint": "Funding payments, margin changes and transfers are listed in the report but are not fills."
+    },
+    {
+      "severity": "warning",
+      "code": "NON_FILL_RECORD",
+      "record": 3,
+      "field": "交易类型",
+      "message": "Not a trade (永续合约 / 资金费收入); excluded from the export",
+      "hint": "Funding payments, margin changes and transfers are listed in the report but are not fills."
+    }
+  ]
+}

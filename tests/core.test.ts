@@ -202,7 +202,7 @@ describe("9. locating problems and counting", () => {
   });
   it("counts: total = accepted + rejected, blank excluded, overlaps not added", () => {
     // 12 rows after the header: 1 blank (row 8), 7 rejected (1-7), 4 accepted (9-12).
-    expect(r.report.summary).toEqual({ totalRecords: 11, acceptedRecords: 4, rejectedRecords: 7, recordsWithWarnings: 3, blankRecordsIgnored: 1, duplicateCandidates: { identical: 0, conflicting: 2, suspected: 1 } });
+    expect(r.report.summary).toEqual({ totalRecords: 11, acceptedRecords: 4, rejectedRecords: 7, recordsWithWarnings: 3, blankRecordsIgnored: 1, nonFillRecords: 0, duplicateCandidates: { identical: 0, conflicting: 2, suspected: 1 } });
   });
   it("exports nothing by default when there are errors", () => {
     expect(r.export).toBe("none");
